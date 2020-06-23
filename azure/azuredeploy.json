@@ -1,0 +1,214 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "yourIp": {
+            "type": "string"
+        },
+        "virtualMachines_adminUsername": {
+            "type": "string"
+        },
+        "virtualMachines_adminPassword": {
+            "type": "securestring"
+        },
+        "confidentialComputeRegion": {
+            "type": "string",
+            "defaultValue": "WestEurope",
+            "allowedValues": [
+                "UKSouth",
+                "CanadaCentral",
+                "EastUS",
+                "WestEurope"
+            ]
+        },
+        "confidentialComputeVmSize": {
+            "type": "string",
+            "defaultValue": "Standard_DC1s_v2",
+            "allowedValues": [
+                "Standard_DC1s_v2",
+                "Standard_DC2s_v2",
+                "Standard_DC4s_v2",
+                "Standard_DC8s_v2"
+            ]
+        },
+        "virtualMachines_name": {
+            "defaultValue": "accvm",
+            "type": "String"
+        },
+        "virtualNetwork_name": {
+            "defaultValue": "accvnet",
+            "type": "String"
+        },
+        "networkInterface_name": {
+            "defaultValue": "accvmnic",
+            "type": "String"
+        },
+        "publicIPAddress_ip_name": {
+            "defaultValue": "accvmip",
+            "type": "String"
+        },
+        "networkSecurityGroup_name": {
+            "defaultValue": "accnsg",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-04-01",
+            "name": "[concat(parameters('virtualNetwork_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetwork_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.0.0.0/24"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('networkSecurityGroup_name')]",
+            "location": "[parameters('confidentialComputeRegion')]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-ssh",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "[parameters('yourIp')]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1000,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('publicIPAddress_ip_name')]",
+            "location": "[parameters('confidentialComputeRegion')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('virtualNetwork_name')]",
+            "location": "[parameters('confidentialComputeRegion')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/24"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "default",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[parameters('virtualMachines_name')]",
+            "location": "[parameters('confidentialComputeRegion')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_name'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('confidentialComputeVmSize')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18_04-lts-gen2",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('virtualMachines_name'), '_OsDisk_1')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "diskSizeGB": 30
+                    }
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_name')]",
+                    "adminUsername": "[parameters('virtualMachines_adminUsername')]",
+                    "adminPassword": "[parameters('virtualMachines_adminPassword')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterface_name'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('networkInterface_name')]",
+            "location": "[parameters('confidentialComputeRegion')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddress_ip_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetwork_name'), 'default')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup_name'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddress_ip_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetwork_name'), 'default')]"
+                            },
+                            "primary": true
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroup_name'))]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "sshCommand": {
+            "type": "string",
+            "value": "[concat('ssh ', parameters('virtualMachines_adminUsername'),'@',reference(parameters('publicIPAddress_ip_name')).ipAddress)]"
+        },
+        "publicIp": {
+            "type": "string",
+            "value": "[reference(parameters('publicIPAddress_ip_name')).ipAddress]"
+        }
+    }
+}

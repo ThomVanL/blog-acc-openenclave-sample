@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure for Intel SGX (x64)",
+            "type": "process",
+            "command": "cmake",
+            "options": {
+                "cwd": "${workspaceFolder}/bld/sgx"
+            },
+            "args": [
+                "-DOE_TEE=SGX",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "${workspaceFolder}"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Build for Intel SGX (x64)",
+            "type": "process",
+            "command": "make",
+            "options": {
+                "cwd": "${workspaceFolder}/bld/sgx"
+            },
+            "problemMatcher": [],
+            "dependsOn": [
+                "Configure for Intel SGX (x64)"
+            ]
+        }
+    ]
+}

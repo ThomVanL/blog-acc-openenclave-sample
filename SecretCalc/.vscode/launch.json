@@ -1,0 +1,54 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(oegdb) Launch Intel SGX (Hardware)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bld/sgx/out/bin/SecretCalc",
+            "args": [
+                "${workspaceFolder}/bld/sgx/out/bin/SecretCalc_enclave.signed",
+                "--debug"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build for Intel SGX (x64)",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/opt/openenclave/bin/oegdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(oegdb) Launch Intel SGX (Simulation)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bld/sgx/out/bin/SecretCalc",
+            "args": [
+                "${workspaceFolder}/bld/sgx/out/bin/SecretCalc_enclave.signed",
+                "--debug",
+                "--simulate"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Build for Intel SGX (x64)",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/opt/openenclave/bin/oegdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
