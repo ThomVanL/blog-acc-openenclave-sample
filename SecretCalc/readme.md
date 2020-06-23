@@ -1,5 +1,21 @@
 A snippet from my [blog post](https://thomasvanlaere.com/posts/2020/06/azure-confidential-computing/) on Azure Confidential Compute.
 
+### Installing Open Enclave on Linux
+To install Open Enclave on Ubuntu 18.04 we will need to carefully follow the instructions that were provided by the Open Enclave team. SSH into the VM using your client of choice and we will start by configuring the Intel and Microsoft APT Repositories. If you wish to connect via the Cloud Shell's SSH functionality, you will need to add its IP to the NSG SSH rule.
+
+```sh
+echo 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main' | sudo tee /etc/apt/sources.list.d/intel-sgx.list
+wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | sudo apt-key add -
+
+echo "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-7 main" | sudo tee /etc/apt/sources.list.d/llvm-toolchain-bionic-7.list
+wget -qO - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+
+echo "deb [arch=amd64] https://packages.microsoft.com/ubuntu/18.04/prod bionic main" | sudo tee /etc/apt/sources.list.d/msprod.list
+wget -qO - https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+````
+
+Remember that Azure attestation service that allows for remote attestation? Next, you will need to install the Intel SGX DCAP driver, followed by installing the Intel and Open Enclave packages and dependencies:
+
 ```sh
 sudo apt update
 sudo apt -y install dkms
@@ -34,3 +50,7 @@ We will still have to go through some additional ceremony to get everything work
 - twxs.cmake (Cmake)
 - ms-vscode.cmake-tools (Cmake tools)
 - webfreak.debug (Native Debug)
+
+There is also an Open Enclave extension for VS Code (ms-iot.msiot-vscode-openenclave) which is currently sitting at version 1.0.10 in the Visual Studio marketplace and has no support for Intel SGX on Linux. Upon inspecting the Open Enclave Github repo's master branch, I noticed that the VS code extension was marked as version 2.0 and supports Intel SGX on Linux. However, unless I'm mistaken I cannot seem to get version 2.0 from the VS marketplace and thus I opted to look at the extension's source code and "manually add support".
+
+I figured that even if I overlooked something in regards to the V2 extension, I'd get a more solid understanding of what it takes to set up a new Open Enclave project.
