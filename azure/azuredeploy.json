@@ -170,6 +170,30 @@
             }
         },
         {
+            "name": "[concat(parameters('virtualMachines_name'),'/', 'setupscript')]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "location": "[parameters('confidentialComputeRegion')]",
+            "apiVersion": "2019-03-01",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', concat(parameters('virtualMachines_name')))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "skipDos2Unix": false,
+                    "timestamp": 1
+                },
+                "protectedSettings": {
+                    "fileUris": [ "https://raw.githubusercontent.com/ThomVanL/blog-acc-openenclave-sample/master/azure/setup.sh" ],
+                    "commandToExecute": "sh setup.sh",
+                    "managedIdentity": {}
+                }
+            }
+        },
+        {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2020-04-01",
             "name": "[parameters('networkInterface_name')]",
