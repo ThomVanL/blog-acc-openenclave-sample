@@ -39,7 +39,7 @@ echo "OpenEnclave 0.9.0 (24 april 2020) and dependencies: installing.."
 apt-get -qq -y install clang-7 libssl-dev gdb libsgx-enclave-common libsgx-enclave-common-dev libprotobuf10 libsgx-dcap-ql libsgx-dcap-ql-dev az-dcap-client=1.4 open-enclave=0.9.0 >/dev/null
 echo "OpenEnclave 0.9.0 (24 april 2020) and dependencies: installed!"
 
-echo "CMAKE: installing version 3.17.2!"
+echo "CMake: installing version 3.17.2!"
 wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2-Linux-x86_64.sh
 chmod u+x cmake-3.17.2-Linux-x86_64.sh
 mkdir /opt/cmake
@@ -48,4 +48,4 @@ ln -s /opt/cmake/bin/ccmake /usr/local/bin/ccmake
 ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
 ln -s /opt/cmake/bin/cpack /usr/local/bin/cpack
 ln -s /opt/cmake/bin/ctest /usr/local/bin/ctest
-echo "CMAKE: installed!"
+echo "CMake: installed!"
